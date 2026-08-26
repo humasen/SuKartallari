@@ -29,9 +29,9 @@ st.caption("ESP32 Destekli ve Yapay Zekâ Tabanlı Anlık Su Kalitesi Analiz Pla
 st.markdown("---")
 
 # Yeniden Düzenlenen 3 Panel Yapısı
-tab1, tab2, tab3 = tab_1, tab_2, tab_3 = st.tabs([
-    "📚 Panel 1: İdeal Parametre Rehberi", 
-    "🎮 Panel 2: Manuel Test Paneli", 
+tab1, tab2, tab3 = st.tabs([
+    "📚 Panel 1: İdeal Parametre Rehberi",  
+    "🎮 Panel 2: Manuel Test Paneli",  
     "📡 Panel 3: Canlı Sensör Paneli"
 ])
 
@@ -85,13 +85,13 @@ with tab2:
                 st.error("🚨 SONUÇ: SU İÇİLEMEZ! UYGUNSUZ DEĞER TESPİT EDİLDİ")
 
 # ==========================================
-# PANEL 3: CANLI SENSÖR VERİLERİ (FİREBASE ENTEGRELİ + OTOMATİK YENİLEME)
+# PANEL 3: CANLI SENSÖR VERİLERİ (FİREBASE + RASTGELE DİĞER SENSÖRLER)
 # ==========================================
 with tab3:
     st.header("📡 Canlı Sensör İzleme Paneli (ESP32 & Firebase)")
     st.markdown("---")
     
-    # Firebase'den Verileri Çekme
+    # Firebase'den Sıcaklık ve TDS Verilerini Çekme
     num_temp = 22.0
     num_tds = 250
     val_temp_str = "-"
@@ -114,10 +114,10 @@ with tab3:
     except:
         st.session_state.esp32_connected = False
 
-    # Diğer Parametreler (pH, Bulanıklık, DO - Sensörler eklenene kadar ideal değerler)
-    sim_ph = 7.3
-    sim_turb = 1.0
-    sim_do = 7.8
+    # Diğer Parametreler (pH, Bulanıklık, DO - Her sayfalandırmada/saniyede dinamik değişir)
+    sim_ph = round(random.uniform(7.3, 7.5), 2)
+    sim_turb = round(random.uniform(0.8, 1.1), 2)
+    sim_do = round(random.uniform(7.7, 8.2), 2)
     
     # Tüm Sensör Verileri Tek Bir Bölümde (5 Kolon)
     st.subheader("📊 Anlık Sensör Ölçüm Değerleri")
@@ -151,6 +151,6 @@ with tab3:
             else:
                 st.error("🚨 CANLI ANALİZ SONUCU: UYGUNSUZ DEĞER TESPİT EDİLDİ")
 
-    # 3 Saniyede bir sayfayı yenileyerek Firebase'deki yeni verileri ekrana getir
+    # 3 Saniyede bir sayfayı yenileyerek hem Firebase'i kontrol eder hem pH/Bulanıklık değerlerini tazeler
     time.sleep(3)
     st.rerun()
