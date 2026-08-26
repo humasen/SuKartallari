@@ -2,6 +2,7 @@ import streamlit as st
 import joblib
 import numpy as np
 import pandas as pd
+import requests
 import random
 import time
 
@@ -14,6 +15,9 @@ def load_model():
     return joblib.load('water_model.pkl')
 
 model = load_model()
+
+# Firebase Veritabanı URL'si
+FIREBASE_URL = "https://su26-d4d6b-default-rtdb.firebaseio.com/sensorData.json"
 
 # Session State (Bağlantı Durumu)
 if 'esp32_connected' not in st.session_state:
@@ -52,7 +56,7 @@ with tab1:
     st.table(pd.DataFrame(guide_data))
 
 # ==========================================
-# PANEL 2: MANUEL TEST PANELSİ
+# PANEL 2: MANUEL TEST PANELİ
 # ==========================================
 with tab2:
     st.header("🎮 Manuel Test ve Simülasyon Paneli")
@@ -81,34 +85,39 @@ with tab2:
                 st.error("🚨 SONUÇ: SU İÇİLEMEZ! UYGUNSUZ DEĞER TESPİT EDİLDİ")
 
 # ==========================================
-# PANEL 3: CANLI SENSÖR VERİLERİ (HEPSİ BİR ARADA + 1 SN OTOMATİK YENİLEME)
+# PANEL 3: CANLI SENSÖR VERİLERİ (FİREBASE ENTEGRELİ + OTOMATİK YENİLEME)
 # ==========================================
 with tab3:
-    st.header("📡 Canlı Sensör İzleme Paneli (ESP32 DevKit V1)")
-    
-    # Test Amaçlı Bağlantı Anahtarı
-    conn_col1, conn_col2 = st.columns([3, 1])
-    with conn_col2:
-        st.session_state.esp32_connected = st.checkbox("ESP32 Bağlantısını Simüle Et", value=st.session_state.esp32_connected)
-    
+    st.header("📡 Canlı Sensör İzleme Paneli (ESP32 & Firebase)")
     st.markdown("---")
     
-    # Gerçek (bağlantı durumuna göre) ve Otomatik Üretilen Tüm Değerler
-    if st.session_state.esp32_connected:
-        val_temp_str = f"{round(random.uniform(21.5, 23.5), 1)} °C"
-        val_tds_str = f"{random.randint(220, 310)} ppm"
-        num_temp = float(val_temp_str.split()[0])
-        num_tds = int(val_tds_str.split()[0])
-    else:
-        val_temp_str = "-"
-        val_tds_str = "-"
-        num_temp = 22.0
-        num_tds = 250
+    # Firebase'den Verileri Çekme
+    num_temp = 22.0
+    num_tds = 250
+    val_temp_str = "-"
+    val_tds_str = "-"
+    
+    try:
+        response = requests.get(FIREBASE_URL, timeout=3)
+        if response.status_code == 200:
+            data = response.json()
+            if data and isinstance(data, dict):
+                num_temp = float(data.get("temp", 22.0))
+                num_tds = int(data.get("tds", 250))
+                val_temp_str = f"{num_temp} °C"
+                val_tds_str = f"{num_tds} ppm"
+                st.session_state.esp32_connected = True
+            else:
+                st.session_state.esp32_connected = False
+        else:
+            st.session_state.esp32_connected = False
+    except:
+        st.session_state.esp32_connected = False
 
-    # Otomatik/İdeal Rastgele Üretilen Parametreler (Her saniye değişir)
-    sim_ph = round(random.uniform(7.1, 7.5), 2)
-    sim_turb = round(random.uniform(0.8, 1.1), 2)
-    sim_do = round(random.uniform(7.7, 8.2), 2)
+    # Diğer Parametreler (pH, Bulanıklık, DO - Sensörler eklenene kadar ideal değerler)
+    sim_ph = 7.3
+    sim_turb = 1.0
+    sim_do = 7.8
     
     # Tüm Sensör Verileri Tek Bir Bölümde (5 Kolon)
     st.subheader("📊 Anlık Sensör Ölçüm Değerleri")
@@ -122,14 +131,16 @@ with tab3:
     col_e.metric(label="🫧 Oksijen (DO)", value=f"{sim_do} mg/L")
     
     if not st.session_state.esp32_connected:
-        st.warning("⚠️ ESP32 Cihazından veri akışı bekleniyor... (Veri akışı şu an yok)")
+        st.warning("⚠️ ESP32 Cihazından Firebase'e veri akışı bekleniyor... (Lütfen ESP32'nin Wi-Fi'ye bağlı ve kodun yüklü olduğundan emin olun)")
+    else:
+        st.success("🟢 ESP32 Cihazı Firebase'e başarıyla bağlı ve veri aktarıyor!")
 
     st.markdown("---")
     
     # Canlı Analiz Butonu
     if st.button("CANLI SENSÖR VERİLERİNİ ANALİZ ET", use_container_width=True, key="btn_live"):
         if not st.session_state.esp32_connected:
-            st.error("❌ Hata: Gerçek sensör bağlantısı (ESP32) olmadan canlı analiz yapılamaz. Veri akışı yok.")
+            st.error("❌ Hata: Firebase'den veri alınamadığı için canlı analiz yapılamaz.")
         else:
             live_input = np.array([[sim_ph, 180.0, num_tds, 7.0, 300.0, num_tds * 1.6, 15.0, 60.0, sim_turb]])
             live_pred = model.predict(live_input)
@@ -140,6 +151,6 @@ with tab3:
             else:
                 st.error("🚨 CANLI ANALİZ SONUCU: UYGUNSUZ DEĞER TESPİT EDİLDİ")
 
-    # 1 Saniyede bir değerlerin canlı güncellenmesi için (Sadece 3. Paneldeyken çalışır)
-    time.sleep(1)
+    # 3 Saniyede bir sayfayı yenileyerek Firebase'deki yeni verileri ekrana getir
+    time.sleep(3)
     st.rerun()
