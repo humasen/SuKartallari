@@ -80,7 +80,7 @@ with tab2:
             pred = model.predict(input_data)
             if pred[0] == 1:
                 st.success("✅ SONUÇ: SU İÇİLEBİLİR VE GÜVENLİ")
-                st.balloons()
+                # Balonlar kaldırıldı
             else:
                 st.error("🚨 SONUÇ: SU İÇİLEMEZ! UYGUNSUZ DEĞER TESPİT EDİLDİ")
 
@@ -114,7 +114,7 @@ with tab3:
     except:
         st.session_state.esp32_connected = False
 
-    # Diğer Parametreler (pH, Bulanıklık, DO - Her sayfalandırmada/saniyede dinamik değişir)
+    # Diğer Parametreler (pH, Bulanıklık, DO - Her 0.5 saniyede bir dinamik değişir)
     sim_ph = round(random.uniform(7.3, 7.5), 2)
     sim_turb = round(random.uniform(0.8, 1.1), 2)
     sim_do = round(random.uniform(7.7, 8.2), 2)
@@ -147,10 +147,10 @@ with tab3:
             
             if live_pred[0] == 1:
                 st.success("✅ CANLI ANALİZ SONUCU: SU İÇİLEBİLİR VE GÜVENLİ")
-                st.balloons()
+                # Balonlar kaldırıldı
             else:
                 st.error("🚨 CANLI ANALİZ SONUCU: UYGUNSUZ DEĞER TESPİT EDİLDİ")
 
-    # 3 Saniyede bir sayfayı yenileyerek hem Firebase'i kontrol eder hem pH/Bulanıklık değerlerini tazeler
+    # 0.5 Saniyede bir sayfayı yenileyerek değerleri tazeler
     time.sleep(0.5)
     st.rerun()
