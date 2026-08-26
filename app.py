@@ -152,5 +152,5 @@ with tab3:
                 st.error("🚨 CANLI ANALİZ SONUCU: UYGUNSUZ DEĞER TESPİT EDİLDİ")
 
     # 3 Saniyede bir sayfayı yenileyerek hem Firebase'i kontrol eder hem pH/Bulanıklık değerlerini tazeler
-    time.sleep(3)
+    time.sleep(0.5)
     st.rerun()
