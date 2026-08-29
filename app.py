@@ -23,7 +23,7 @@ FIREBASE_URL = "https://su26-d4d6b-default-rtdb.firebaseio.com/sensorData.json"
 if 'esp32_connected' not in st.session_state:
     st.session_state.esp32_connected = False
 
-# Arayüz Başlığı (ŞENFEST - ÇİĞLİ BİLSEM | İskRisk Platformu ve İletişim Bilgisi Eklendi)
+# Arayüz Başlığı (SU KARTALLARI - ÇİĞLİ BİLSEM | Su Analizi Platformu ve İletişim Bilgisi Eklendi)
 col_title1, col_title2 = st.columns([3, 1])
 
 with col_title1:
@@ -31,7 +31,7 @@ with col_title1:
     st.caption("ESP32 Destekli ve Yapay Zekâ Tabanlı Anlık Su Kalitesi Analiz Platformu")
 
 with col_title2:
-    st.markdown("<div style='text-align: right;'><span style='font-size: 14px; font-weight: bold;'>ŞENFEST - ÇİĞLİ BİLSEM | İskRisk Platformu</span><br><span style='font-size: 11px; color: gray;'>İletişim: sukartallari26@gmail.com</span></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: right;'><span style='font-size: 14px; font-weight: bold;'>SU KARTALLARI - ÇİĞLİ BİLSEM | Su Analizi Platformu</span><br><span style='font-size: 11px; color: gray;'>İletişim: sukartallari26@gmail.com</span></div>", unsafe_allow_html=True)
 
 st.markdown("---")
 
